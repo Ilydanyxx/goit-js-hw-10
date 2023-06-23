@@ -1,12 +1,14 @@
-import axios from "axios";
 import Notiflix from "notiflix";
-axios.defaults.headers.common["x-api-key"] = "live_FpNqr14ibuI6LbhtLTKWF3gfHUtTBhClGk1engkIBHBe6ltG25VfJpyrkvqzuXmO";
-
 import { fetchBreeds } from "./cat-api";
 import { fetchCatByBreed } from "./cat-api";
 const loader = document.querySelector(".loader")
 const select = document.querySelector(".breed-select")
 const catInfo = document.querySelector(".cat-info")
+const error = document.querySelector(".error")
+
+
+error.style.visibility = "hidden";
+loader.setAttribute('style', 'width: 48px; height: 48px; border: 5px solid #FFF; border - bottom - color: transparent; border - radius: 50 %; display: inline - block; box - sizing: border - box; animation: rotation 1s linear infinite; @keyframes rotation { 0 % { transform: rotate(0deg); }   100 % { transform: rotate(360deg); } }' )
 fetchBreeds()
     .then(breeds => {
         const options = breeds.map(breed => {
@@ -17,40 +19,51 @@ fetchBreeds()
             return option;
             
         })
+
         console.log(options);
-        options.forEach(option => {
-            select.appendChild(option);
-        });
+        select.append(...options)
         select.style.display = "block"
         loader.style.display = "none"
         new SlimSelect({
             select: ".breed-select",
         })
+        
     })
     .catch(() => {
         Notiflix.Notify.info(
-            "Oops"
+            "Oops! Something went wrong! Try reloading the page!"
         )
         loader.style.display = "none";
     });
+    
 
 select.addEventListener("change", () => {
-    const breedId = select.id;
+    const breedId = select.value;
+    const name = select.target;
     fetchCatByBreed(breedId)
-    .then(
-    function renderPosts(posts) {
-  const markup = posts
-    .map(({ id, title, body}) => {
-        return `<li>
-          <img src=""
-          <h2 class="name-option">${title}</h2>
-          <p class="description">${id}</p>
-          <p class="character">${body}</p>
-        </li>`;
-    })
-    .join("");
-            catInfo.innerHTML = markup;
-    
-        }
-    )
+        .then(breeds => {
+            const url = breeds[0].url;
+            const img = document.createElement('img');
+            img.src = url;
+            img.width = 300;
+            const breedNameEl = document.createElement('h2');
+            breedNameEl.textContent = breeds[0].breeds[0].name;
+              const descriptionEl = document.createElement('p');
+            descriptionEl.textContent = breeds[0].breeds[0].description;
+             const temperamentEl = document.createElement('p');
+            temperamentEl.textContent = breeds[0].breeds[0].temperament;
+            catInfo.innerHTML = '';
+             catInfo.appendChild(img);
+            catInfo.appendChild(breedNameEl);
+            catInfo.appendChild(descriptionEl);
+            catInfo.appendChild(temperamentEl);
+        })
+        .catch(() => {
+        Notiflix.Notify.info(
+            "Oops! Something went wrong! Try reloading the page!"
+        )
+        loader.style.display = "none";
+    });
+        
+
 })
